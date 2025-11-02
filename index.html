@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Repertório - Ministério de Louvor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Repertório - Ministério Tabernáculo de Davi</h1>
+    <p class="subtitle">Filtre por categoria, busque por título ou clique para ver letra e ouvir.</p>
+  </header>
+
+  <nav class="controls">
+    <div class="categories" id="categories"></div>
+    <input id="search" placeholder="Pesquisar música ou autor..." />
+    <button id="clear">Limpar filtro</button>
+    <button id="add-song-btn">Adicionar música</button>
+  </nav>
+
+  <main id="song-list" class="grid"></main>
+
+  <footer>
+    <small></small>
+  </footer>
+
+  <!-- Modal de música -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <button id="close-modal" class="close">✕</button>
+      <h2 id="modal-title"></h2>
+      <p id="modal-meta"></p>
+      <div id="player-area"></div>
+      <pre id="lyrics" class="lyrics"></pre>
+      <button id="expand-lyrics-btn">Expandir letra</button>
+      <p class="note">Se o player não tocar, abra o link diretamente no YouTube/Spotify.</p>
+    </div>
+  </div>
+
+  <!-- Modal de adicionar música -->
+  <div id="add-modal" class="modal hidden">
+    <div class="modal-content">
+      <button id="close-add-modal" class="close">✕</button>
+      <h2>Adicionar Nova Música</h2>
+      <form id="add-song-form">
+        <label>Título:<br><input id="new-title" required /></label><br>
+        <label>Autor:<br><input id="new-author" /></label><br>
+        <label>Categorias (separadas por vírgula):<br><input id="new-categories" /></label><br>
+        <label>Link (YouTube/Spotify):<br><input id="new-link" /></label><br>
+        <label>Letra:<br><textarea id="new-lyrics" rows="6"></textarea></label><br>
+        <button type="submit">Adicionar</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
