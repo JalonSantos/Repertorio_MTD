@@ -1,0 +1,21 @@
+{
+  "name": "Repertório - Ministério Tabernáculo de Davi",
+  "short_name": "MTD Repertório",
+  "description": "Acesse e filtre o repertório de músicas do Ministério Tabernáculo de Davi",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f1724",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
