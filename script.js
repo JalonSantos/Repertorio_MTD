@@ -23,16 +23,24 @@ let selectedDate = new Date().toLocaleDateString('pt-BR');
 
 const selectModeBtn = document.getElementById("select-mode-btn");
 const sendWhatsAppBtn = document.getElementById("send-whatsapp-btn");
-const serviceModal = document.getElementById("service-modal");
-const closeServiceModal = document.getElementById("close-service-modal");
-const serviceForm = document.getElementById("service-form");
-const customServiceInput = document.getElementById("custom-service");
 
-// Abrir modal de culto
+// --- MODAL DE SELEÇÃO DE CULTO ---
+const serviceModal = document.getElementById("service-modal");
+const serviceForm = document.getElementById("service-form");
+const closeServiceModal = document.getElementById("close-service-modal");
+const customServiceInput = document.getElementById("custom-service");
+const serviceDateInput = document.getElementById("service-date");
+
+// Inicializa o input de data com a data atual
+const today = new Date();
+serviceDateInput.value = today.toISOString().slice(0, 10); // yyyy-mm-dd
+
+// Abrir modal ao clicar no botão
 selectModeBtn.addEventListener("click", () => {
   if (!selectMode) {
     serviceModal.classList.remove("hidden");
   } else {
+    // Desativa o modo seleção se já estava ativo
     selectMode = false;
     selectedSongs = [];
     selectedService = "";
@@ -48,9 +56,23 @@ closeServiceModal.addEventListener("click", () => {
   serviceModal.classList.add("hidden");
 });
 
-// Confirmar culto
+// Habilitar/desabilitar campo "Outro" conforme radio selecionado
+serviceForm.querySelectorAll("input[name='service']").forEach(radio => {
+  radio.addEventListener("change", () => {
+    if (radio.value === "Outro" && radio.checked) {
+      customServiceInput.disabled = false;
+      customServiceInput.focus();
+    } else {
+      customServiceInput.disabled = true;
+      customServiceInput.value = "";
+    }
+  });
+});
+
+// Confirmar culto e data
 serviceForm.addEventListener("submit", e => {
   e.preventDefault();
+
   const selectedRadio = serviceForm.querySelector("input[name='service']:checked");
   if (!selectedRadio) return;
 
@@ -58,9 +80,11 @@ serviceForm.addEventListener("submit", e => {
     ? customServiceInput.value.trim()
     : selectedRadio.value;
 
-  // Perguntar data
-  const inputDate = prompt("Digite a data do repertório (dd/mm/aaaa):", selectedDate);
-  if (inputDate) selectedDate = inputDate;
+  // Pega a data direto do input
+  selectedDate = serviceDateInput.value; // yyyy-mm-dd
+  // Converte para dd/mm/yyyy para exibição
+  const [year, month, day] = selectedDate.split("-");
+  selectedDate = `${day}/${month}/${year}`;
 
   serviceModal.classList.add("hidden");
 
@@ -240,7 +264,7 @@ sendWhatsAppBtn.addEventListener("click", () => {
     const title = s.title.replace(/�/g, '');
     const author = (s.author || '').replace(/�/g, '');
     const link = (s.link || '').replace(/�/g, '');
-    message += `\n• ${title}${author ? ` (${author})` : ''}\n${link ? '🎧 ' + link : ''}\n`;
+    message += `\n• ${title}${author ? ` (${author})` : ''}\n${link ? '🔗 ' + link : ''}\n`;
   });
 
   const encoded = encodeURIComponent(message);
