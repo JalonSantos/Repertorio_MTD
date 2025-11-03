@@ -15,6 +15,61 @@ const db = getFirestore(app);
 
 let songs = [];
 
+// --- SELEÇÃO DE MÚSICAS ---
+let selectMode = false;
+let selectedSongs = [];
+let selectedService = "";
+let selectedDate = new Date().toLocaleDateString('pt-BR');
+
+const selectModeBtn = document.getElementById("select-mode-btn");
+const sendWhatsAppBtn = document.getElementById("send-whatsapp-btn");
+const serviceModal = document.getElementById("service-modal");
+const closeServiceModal = document.getElementById("close-service-modal");
+const serviceForm = document.getElementById("service-form");
+const customServiceInput = document.getElementById("custom-service");
+
+// Abrir modal de culto
+selectModeBtn.addEventListener("click", () => {
+  if (!selectMode) {
+    serviceModal.classList.remove("hidden");
+  } else {
+    selectMode = false;
+    selectedSongs = [];
+    selectedService = "";
+    selectModeBtn.classList.remove("active");
+    sendWhatsAppBtn.style.display = "none";
+    document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+    selectModeBtn.textContent = "🎵 Selecionar músicas";
+  }
+});
+
+// Fechar modal
+closeServiceModal.addEventListener("click", () => {
+  serviceModal.classList.add("hidden");
+});
+
+// Confirmar culto
+serviceForm.addEventListener("submit", e => {
+  e.preventDefault();
+  const selectedRadio = serviceForm.querySelector("input[name='service']:checked");
+  if (!selectedRadio) return;
+
+  selectedService = selectedRadio.value === "Outro" && customServiceInput.value.trim()
+    ? customServiceInput.value.trim()
+    : selectedRadio.value;
+
+  // Perguntar data
+  const inputDate = prompt("Digite a data do repertório (dd/mm/aaaa):", selectedDate);
+  if (inputDate) selectedDate = inputDate;
+
+  serviceModal.classList.add("hidden");
+
+  // Ativar modo de seleção
+  selectMode = true;
+  selectModeBtn.classList.add("active");
+  selectModeBtn.textContent = `✅ Montando repertório: ${selectedService}`;
+});
+
 // --- FUNÇÕES PRINCIPAIS ---
 async function loadSongs() {
   const querySnapshot = await getDocs(collection(db, "songs"));
@@ -57,6 +112,23 @@ function renderList(list) {
       <div class="tags">${(s.categories || []).map(t => '<span class="tag">' + t + '</span>').join('')}</div>
       <button class="open">Abrir</button>`;
     card.querySelector('.open').onclick = () => openModal(s);
+
+    // Selecionar música (modo seleção)
+    card.addEventListener('click', e => {
+      if (!selectMode) return;
+      if (e.target.classList.contains("open")) return;
+      const title = s.title;
+      const link = s.link || '';
+      const isSelected = card.classList.toggle("selected");
+
+      if (isSelected) {
+        selectedSongs.push({ title, link, author: s.author || '' });
+      } else {
+        selectedSongs = selectedSongs.filter(song => song.title !== title);
+      }
+      sendWhatsAppBtn.style.display = selectedSongs.length > 0 ? "inline-block" : "none";
+    });
+
     main.appendChild(card);
   });
 }
@@ -103,7 +175,6 @@ document.getElementById('close-modal').onclick = () => {
   const modal = document.getElementById('modal');
   modal.classList.add('hidden');
   if (currentIframe) {
-    // Pausa vídeo do YouTube via postMessage
     currentIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
   }
 };
@@ -113,9 +184,8 @@ document.getElementById('expand-lyrics-btn').onclick = () => {
   lyricsEl.classList.toggle('expanded');
   document.getElementById('expand-lyrics-btn').textContent =
     lyricsEl.classList.contains('expanded') ? 'Recolher letra' : 'Expandir letra';
-}
+};
 
-// --- FUNÇÕES DE PARSE LINK ---
 function getYouTubeId(url) {
   if (!url) return null;
   try {
@@ -129,19 +199,20 @@ function getYouTubeId(url) {
   return null;
 }
 
-// --- EVENTOS DE BUSCA ---
+// --- BUSCA ---
 document.getElementById('search').addEventListener('input', e => {
   const q = e.target.value.toLowerCase().trim();
   if (!q) { renderList(songs); return; }
   const filtered = songs.filter(s => (s.title + ' ' + (s.author || '') + ' ' + (s.categories || []).join(' ')).toLowerCase().includes(q));
   renderList(filtered);
 });
+
 document.getElementById('clear').addEventListener('click', () => {
   document.getElementById('search').value = '';
   renderList(songs);
 });
 
-// --- MODAL ADICIONAR MÚSICA ---
+// --- ADICIONAR MÚSICA ---
 const addModal = document.getElementById('add-modal');
 document.getElementById('add-song-btn').onclick = () => addModal.classList.remove('hidden');
 document.getElementById('close-add-modal').onclick = () => addModal.classList.add('hidden');
@@ -159,6 +230,21 @@ document.getElementById('add-song-form').addEventListener('submit', async e => {
   addModal.classList.add('hidden');
   e.target.reset();
   loadSongs();
+});
+
+// --- ENVIAR PELO WHATSAPP ---
+sendWhatsAppBtn.addEventListener("click", () => {
+  let message = `🎶 *Músicas para ${selectedService} [${selectedDate}]*\n`;
+
+  selectedSongs.forEach(s => {
+    const title = s.title.replace(/�/g, '');
+    const author = (s.author || '').replace(/�/g, '');
+    const link = (s.link || '').replace(/�/g, '');
+    message += `\n• ${title}${author ? ` (${author})` : ''}\n${link ? '🔗 ' + link : ''}\n`;
+  });
+
+  const encoded = encodeURIComponent(message);
+  window.open(`https://wa.me/?text=${encoded}`, '_blank');
 });
 
 // --- INICIALIZA ---
