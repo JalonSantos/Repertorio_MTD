@@ -19,28 +19,22 @@ let songs = [];
 let selectMode = false;
 let selectedSongs = [];
 let selectedService = "";
-let selectedDate = new Date().toLocaleDateString('pt-BR');
-
-const selectModeBtn = document.getElementById("select-mode-btn");
-const sendWhatsAppBtn = document.getElementById("send-whatsapp-btn");
+let selectedDate = "";
 
 // --- MODAL DE SELEÇÃO DE CULTO ---
+const selectModeBtn = document.getElementById("select-mode-btn");
+const sendWhatsAppBtn = document.getElementById("send-whatsapp-btn");
 const serviceModal = document.getElementById("service-modal");
 const serviceForm = document.getElementById("service-form");
 const closeServiceModal = document.getElementById("close-service-modal");
 const customServiceInput = document.getElementById("custom-service");
 const serviceDateInput = document.getElementById("service-date");
 
-// Inicializa o input de data com a data atual
-const today = new Date();
-serviceDateInput.value = today.toISOString().slice(0, 10); // yyyy-mm-dd
-
 // Abrir modal ao clicar no botão
 selectModeBtn.addEventListener("click", () => {
   if (!selectMode) {
     serviceModal.classList.remove("hidden");
   } else {
-    // Desativa o modo seleção se já estava ativo
     selectMode = false;
     selectedSongs = [];
     selectedService = "";
@@ -80,15 +74,17 @@ serviceForm.addEventListener("submit", e => {
     ? customServiceInput.value.trim()
     : selectedRadio.value;
 
-  // Pega a data direto do input
-  selectedDate = serviceDateInput.value; // yyyy-mm-dd
-  // Converte para dd/mm/yyyy para exibição
-  const [year, month, day] = selectedDate.split("-");
+  if (!serviceDateInput.value) {
+    alert("Por favor, selecione a data do repertório!");
+    return;
+  }
+
+  // Pega a data direto do input e converte para dd/mm/yyyy
+  const [year, month, day] = serviceDateInput.value.split("-");
   selectedDate = `${day}/${month}/${year}`;
 
   serviceModal.classList.add("hidden");
 
-  // Ativar modo de seleção
   selectMode = true;
   selectModeBtn.classList.add("active");
   selectModeBtn.textContent = `✅ Montando repertório: ${selectedService}`;
@@ -137,7 +133,6 @@ function renderList(list) {
       <button class="open">Abrir</button>`;
     card.querySelector('.open').onclick = () => openModal(s);
 
-    // Selecionar música (modo seleção)
     card.addEventListener('click', e => {
       if (!selectMode) return;
       if (e.target.classList.contains("open")) return;
