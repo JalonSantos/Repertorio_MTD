@@ -6,8 +6,7 @@
   <title>Repertório - Ministério de Louvor</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#f59e0b">
-
+  <meta name="theme-color" content="#f59e0b">
 </head>
 <body>
   <header>
@@ -68,7 +67,10 @@
         <label><input type="radio" name="service" value="EBD" required> EBD</label><br>
         <label><input type="radio" name="service" value="Quarta-feira"> Quarta-feira</label><br>
         <label><input type="radio" name="service" value="Domingo à noite"> Domingo à noite</label><br>
-        <label><input type="radio" name="service" value="Outro"> Outro: <input id="custom-service" placeholder="Especifique" /></label><br>
+        <label>
+          <input type="radio" name="service" value="Outro"> Outro: 
+          <input id="custom-service" placeholder="Especifique" disabled />
+        </label><br>
         <label>Data: <input type="date" id="service-date" required></label><br>
         <button type="submit">Confirmar</button>
       </form>
@@ -77,15 +79,14 @@
 
   <script type="module" src="script.js"></script>
   <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').then(
-        reg => console.log('Service Worker registrado:', reg.scope),
-        err => console.log('Falha ao registrar SW:', err)
-      );
-    });
-  }
-</script>
-
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(
+          reg => console.log('Service Worker registrado:', reg.scope),
+          err => console.log('Falha ao registrar SW:', err)
+        );
+      });
+    }
+  </script>
 </body>
 </html>
