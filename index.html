@@ -1,10 +1,13 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8">   
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Repertório - Ministério de Louvor</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f59e0b">
+
 </head>
 <body>
   <header>
@@ -17,19 +20,16 @@
     <input id="search" placeholder="Pesquisar música ou autor..." />
     <button id="clear">Limpar filtro</button>
 
-    <!-- Botão de adicionar música (estilizado) -->
-    <button id="add-song-btn">
-       Adicionar música
-    </button>
+    <button id="add-song-btn">Adicionar música</button>
+    <button id="select-mode-btn">🎵 Selecionar músicas</button>
+    <button id="send-whatsapp-btn" style="display:none;">📱 Enviar pelo WhatsApp</button>
   </nav>
 
   <main id="song-list" class="grid"></main>
 
-  <footer>
-    <small></small>
-  </footer>
+  <footer><small></small></footer>
 
-  <!-- Modal de música -->
+  <!-- Modal música -->
   <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-content">
       <button id="close-modal" class="close">✕</button>
@@ -42,7 +42,7 @@
     </div>
   </div>
 
-  <!-- Modal de adicionar música -->
+  <!-- Modal adicionar música -->
   <div id="add-modal" class="modal hidden">
     <div class="modal-content">
       <button id="close-add-modal" class="close">✕</button>
@@ -58,6 +58,34 @@
     </div>
   </div>
 
+  <!-- Modal seleção de culto -->
+  <div id="service-modal" class="modal hidden">
+    <div class="modal-content">
+      <button id="close-service-modal" class="close">✕</button>
+      <h2>Selecionar culto</h2>
+      <p>Para qual culto e data você está montando o repertório?</p>
+      <form id="service-form">
+        <label><input type="radio" name="service" value="EBD" required> EBD</label><br>
+        <label><input type="radio" name="service" value="Quarta-feira"> Quarta-feira</label><br>
+        <label><input type="radio" name="service" value="Domingo à noite"> Domingo à noite</label><br>
+        <label><input type="radio" name="service" value="Outro"> Outro: <input id="custom-service" placeholder="Especifique" /></label><br>
+        <label>Data: <input type="date" id="service-date" required></label><br>
+        <button type="submit">Confirmar</button>
+      </form>
+    </div>
+  </div>
+
   <script type="module" src="script.js"></script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').then(
+        reg => console.log('Service Worker registrado:', reg.scope),
+        err => console.log('Falha ao registrar SW:', err)
+      );
+    });
+  }
+</script>
+
 </body>
 </html>
