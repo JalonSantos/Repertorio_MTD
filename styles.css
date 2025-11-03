@@ -151,7 +151,7 @@ footer{margin-top:18px; color:#9fb0c8;}
   font-weight:bold;
 }
 
-/* Botão principal "Adicionar música" estilizado */
+/* Botão principal "Adicionar música" */
 #add-song-btn {
   background: var(--accent);
   border: none;
@@ -172,7 +172,48 @@ footer{margin-top:18px; color:#9fb0c8;}
   transform: scale(1.05);
   box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
 }
+#add-song-btn:active { transform: scale(0.97); }
 
-#add-song-btn:active {
-  transform: scale(0.97);
+/* Seleção de músicas */
+.card.selected {
+  outline: 2px solid var(--accent);
+  transform: scale(1.02);
+  transition: transform 0.1s ease, outline 0.2s ease;
+}
+
+/* Modal seleção de culto */
+#service-modal label { display:block; margin:6px 0; }
+
+#custom-service, #service-date {
+  margin-left: 6px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+}
+
+#service-form button {
+  background: var(--accent);
+  border: none;
+  color: #000;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* Botões seleção e envio */
+#select-mode-btn, #send-whatsapp-btn {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+#select-mode-btn.active {
+  background: var(--accent);
+  color: #000;
 }
