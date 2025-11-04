@@ -259,7 +259,7 @@ sendWhatsAppBtn.addEventListener("click", () => {
     const title = s.title.replace(/�/g, '');
     const author = (s.author || '').replace(/�/g, '');
     const link = (s.link || '').replace(/�/g, '');
-    message += `\n• ${title}${author ? ` (${author})` : ''}\n${link ? '🔗 ' + link : ''}\n`;
+    message += `\n• ${title}${author ? ` (${author})` : ''}\n${link ? '🎧 ' + link : ''}\n`;
   });
 
   const encoded = encodeURIComponent(message);
