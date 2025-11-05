@@ -222,7 +222,7 @@ function getYouTubeId(url) {
 document.getElementById('search').addEventListener('input', e => {
   const q = e.target.value.toLowerCase().trim();
   if (!q) { renderList(songs); return; }
-  const filtered = songs.filter(s => (s.title + ' ' + (s.author || '') + ' ' + (s.categories || []).join(' ')).toLowerCase().includes(q));
+  const filtered = songs.filter(s => (s.title + ' ' + (s.author || '') + ' '+ (s.lyrics || '') + ' ' + (s.categories || []).join(' ')).toLowerCase().includes(q));
   renderList(filtered);
 });
 
