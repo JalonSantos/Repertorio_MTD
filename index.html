@@ -80,14 +80,24 @@
   <script type="module" src="script.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').then(
-          reg => console.log('Service Worker registrado:', reg.scope),
-          err => console.log('Falha ao registrar SW:', err)
-        );
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      console.log('✅ Service Worker registrado:', reg.scope);
+
+      // Detecta nova versão e atualiza automaticamente
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('🆕 Nova versão disponível! Atualizando...');
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
       });
-    }
+    }).catch(err => console.error('❌ Falha ao registrar SW:', err));
+  });
+}
+
   </script>
 </body>
 </html>
-
