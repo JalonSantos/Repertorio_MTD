@@ -1,5 +1,5 @@
 {
-  "name": "Repertório - Ministério Tabernáculo de Davi",
+  "name": "MTD Repertório",
   "short_name": "MTD Repertório",
   "description": "Acesse e filtre o repertório de músicas do Ministério Tabernáculo de Davi",
   "start_url": "./index.html",
@@ -19,3 +19,4 @@
     }
   ]
 }
+
