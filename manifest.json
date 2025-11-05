@@ -2,7 +2,7 @@
   "name": "MTD Repertório",
   "short_name": "MTD Repertório",
   "description": "Acesse e filtre o repertório de músicas do Ministério Tabernáculo de Davi",
-  "start_url": "./index.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#0f1724",
   "theme_color": "#f59e0b",
@@ -19,4 +19,5 @@
     }
   ]
 }
+
 
