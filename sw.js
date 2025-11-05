@@ -4,7 +4,7 @@ const urlsToCache = [
   "/index.html",
   "/styles.css",
   "/script.js",
-  "/icon-192x192.png",
+  "/icon-512x512.png",
   "/icon-512x512.png"
 ];
 
@@ -45,3 +45,4 @@ self.addEventListener("fetch", event => {
       .catch(() => caches.match(event.request)) // se offline, usa o cache
   );
 });
+
