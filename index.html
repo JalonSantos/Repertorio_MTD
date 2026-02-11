@@ -1,38 +1,46 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">   
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MTD Repertório</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repertório - MTD</title>
   <link rel="icon" type="image/png" href="icons/favicon.png">
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#f59e0b">
+  <!-- Fonte Lora para modo leitura ficar mais bonito -->
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <header>
-    <h1>Repertório - Ministério Tabernáculo de Davi</h1>
-    <p class="subtitle">Filtre por categoria, busque por título ou clique para ver letra e ouvir.</p>
+    <h1>Repertório - MTD</h1>
+    <p class="subtitle">Filtre, busque ou selecione músicas para o culto</p>
   </header>
 
-  <nav class="controls">
-    <div class="categories" id="categories"></div>
-    <input id="search" placeholder="Pesquisar música ou autor..." />
-    <button id="clear">Limpar filtro</button>
-
-    <button id="add-song-btn">Adicionar música</button>
-    <button id="select-mode-btn">🎵 Selecionar músicas</button>
-    <button id="send-whatsapp-btn" style="display:none;">📱 Enviar pelo WhatsApp</button>
-  </nav>
+<nav class="controls">
+  <div class="categories">
+    <select id="category-select">
+      <option value="all">Carregando categorias...</option>
+    </select>
+  </div>
+  <input id="search" placeholder="Pesquisar música ou autor..." />
+  <button id="clear" title="Limpar filtro">🧹 Limpar</button>
+  <button id="add-song-btn" title="Adicionar nova música">Música</button>
+  <button id="history-btn" title="Ver histórico">Histórico</button>
+  <button id="select-mode-btn" title="Selecionar músicas">Selecionar</button>
+  <button id="send-whatsapp-btn" style="display:none;" title="Enviar pelo WhatsApp">Enviar</button>
+</nav>
 
   <main id="song-list" class="grid"></main>
 
-  <footer><small></small></footer>
+  <footer><small>Ministério Tabernáculo de Davi</small></footer>
 
-  <!-- Modal música -->
+  <!-- Modal música (visualização) -->
   <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-content">
       <button id="close-modal" class="close">✕</button>
+      <button id="edit-song-btn" class="close" style="right: 90px; font-size: 1.3rem; background:none; border:none; cursor:pointer;" title="Editar música">✏️</button>
+      <button id="read-mode-btn" class="close" style="right: 50px; font-size: 1.3rem; background:none; border:none; cursor:pointer;" title="Modo Leitura / Projeção">👁️</button>
       <h2 id="modal-title"></h2>
       <p id="modal-meta"></p>
       <div id="player-area"></div>
@@ -42,18 +50,18 @@
     </div>
   </div>
 
-  <!-- Modal adicionar música -->
+  <!-- Modal adicionar / editar música -->
   <div id="add-modal" class="modal hidden">
     <div class="modal-content">
       <button id="close-add-modal" class="close">✕</button>
-      <h2>Adicionar Nova Música</h2>
+      <h2 id="add-modal-title">Adicionar Nova Música</h2>
       <form id="add-song-form">
         <label>Título:<br><input id="new-title" required /></label><br>
         <label>Autor:<br><input id="new-author" /></label><br>
         <label>Categorias (separadas por vírgula):<br><input id="new-categories" /></label><br>
         <label>Link (YouTube/Spotify):<br><input id="new-link" /></label><br>
         <label>Letra:<br><textarea id="new-lyrics" rows="6"></textarea></label><br>
-        <button type="submit">Adicionar</button>
+        <button type="submit" id="submit-song-btn">Adicionar</button>
       </form>
     </div>
   </div>
@@ -69,7 +77,7 @@
         <label><input type="radio" name="service" value="Quarta-feira"> Quarta-feira</label><br>
         <label><input type="radio" name="service" value="Domingo à noite"> Domingo à noite</label><br>
         <label>
-          <input type="radio" name="service" value="Outro"> Outro: 
+          <input type="radio" name="service" value="Outro"> Outro:
           <input id="custom-service" placeholder="Especifique" disabled />
         </label><br>
         <label>Data: <input type="date" id="service-date" required></label><br>
@@ -78,27 +86,42 @@
     </div>
   </div>
 
+  <!-- Modal Modo Leitura / Projeção -->
+  <div id="read-modal" class="modal hidden">
+    <div class="read-content">
+      <button id="close-read-modal" class="close">✕</button>
+      <h2 id="read-title"></h2>
+      <pre id="read-lyrics"></pre>
+    </div>
+  </div>
+
+  <!-- Modal Histórico -->
+  <div id="history-modal" class="modal hidden">
+    <div class="modal-content">
+      <button id="close-history-modal" class="close">✕</button>
+      <h2>Histórico de Repertórios Enviados</h2>
+      <div id="history-list"></div>
+    </div>
+  </div>
+
   <script type="module" src="script.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(reg => {
-      console.log('✅ Service Worker registrado:', reg.scope);
-
-      // Detecta nova versão e atualiza automaticamente
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            console.log('🆕 Nova versão disponível! Atualizando...');
-            newWorker.postMessage({ type: 'SKIP_WAITING' });
-          }
-        });
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          console.log('✅ Service Worker registrado:', reg.scope);
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('🆕 Nova versão disponível! Atualizando...');
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          });
+        }).catch(err => console.error('❌ Falha ao registrar SW:', err));
       });
-    }).catch(err => console.error('❌ Falha ao registrar SW:', err));
-  });
-}
-
+    }
   </script>
 </body>
 </html>
