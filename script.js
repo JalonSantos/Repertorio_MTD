@@ -3,12 +3,12 @@ import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.c
 
 // --- CONFIG FIREBASE ---
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
+  apiKey: "AIzaSyB7IMYLeCuIHMVIHRvnGa_n3l3zYhAH-Ms",
   authDomain: "louvor-db.firebaseapp.com",
   projectId: "louvor-db",
   storageBucket: "louvor-db.appspot.com",
-  messagingSenderId: "SUA_ID",
-  appId: "SEU_APP_ID"
+  messagingSenderId: "505772532937",
+  appId: "1:505772532937:web:e3bcfa3e1ba6f211351918""
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
