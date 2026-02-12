@@ -72,31 +72,20 @@ document.addEventListener('click', async (e) => {
       return;
     }
 
-    // Limpeza comum para as duas buscas (define aqui para usar em ambas)
-    let cleanTitle = title
-      .replace(/\(.*?\)/g, '')           // remove parênteses
-      .replace(/versão.*/gi, '')         // remove "versão ..."
-      .replace(/ao vivo.*/gi, '')        // remove "ao vivo ..."
-      .replace(/\[.*?\]/g, '')           // remove colchetes (se tiver)
-      .trim();
-
-    let cleanAuthor = author
-      .replace(/\(.*?\)/g, '')
-      .trim();
-
     let foundLink = linkInput.value.trim();
     let foundLyrics = lyricsInput.value.trim();
 
-    // 1. Buscar vídeo no YouTube
+    // 1. Buscar vídeo no YouTube (já estava funcionando)
     if (!foundLink) {
       try {
-        const query = encodeURIComponent(`${cleanTitle} ${cleanAuthor} oficial letra`);
+        const query = encodeURIComponent(`${title} ${author} oficial letra`);
         const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=3&key=${YOUTUBE_API_KEY}`;
         
         const response = await fetch(ytUrl);
         const data = await response.json();
 
         if (data.items && data.items.length > 0) {
+          // Prioriza vídeo com "oficial" ou "letra" no título
           const bestVideo = data.items.find(item => 
             item.snippet.title.toLowerCase().includes("oficial") || 
             item.snippet.title.toLowerCase().includes("letra") ||
@@ -111,40 +100,51 @@ document.addEventListener('click', async (e) => {
       }
     }
 
-    // 2. Buscar letra via lyrics.ovh (gratuita)
-    if (!foundLyrics) {
-      try {
-        let lyricsUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(cleanAuthor)}/${encodeURIComponent(cleanTitle)}`;
-        let response = await fetch(lyricsUrl);
-        let data = await response.json();
+// 2. Buscar letra via backend Vercel
+if (!foundLyrics) {
+  try {
+    const BACKEND_URL = "https://mtd-repertorio-backend.vercel.app/api/search";  // sua URL exata
 
-        if (data.lyrics) {
-          foundLyrics = data.lyrics;
-          lyricsInput.value = foundLyrics;
-        } else {
-          // Tenta invertido
-          lyricsUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(cleanTitle)}/${encodeURIComponent(cleanAuthor)}`;
-          response = await fetch(lyricsUrl);
-          data = await response.json();
+    const searchTerm = `${cleanTitle} ${cleanAuthor}`;
+    const response = await fetch(`${BACKEND_URL}?q=${encodeURIComponent(searchTerm)}`);
 
-          if (data.lyrics) {
-            foundLyrics = data.lyrics;
-            lyricsInput.value = foundLyrics;
-          }
-        }
-      } catch (err) {
-        console.error("Erro ao buscar letra:", err);
-      }
+    if (!response.ok) {
+      throw new Error(`Backend retornou ${response.status}`);
     }
 
-    // Feedback final
+    const data = await response.json();
+
+    if (data.response?.hits?.length > 0) {
+      const bestHit = data.response.hits[0].result;
+      const songUrl = bestHit.url;
+
+      alert("Letra encontrada no Genius!\n\n" +
+            "Abra o link para copiar a letra completa:\n" + songUrl);
+      window.open(songUrl, '_blank');
+    } else {
+      const letrasLink = `https://www.letras.mus.br/?q=${encodeURIComponent(searchTerm)}`;
+      alert("Letra não encontrada no Genius.\n\n" +
+            "Abri letras.mus.br para você copiar:\n" + letrasLink);
+      window.open(letrasLink, '_blank');
+    }
+  } catch (err) {
+    console.error("Erro ao buscar via backend:", err);
+    const letrasLink = `https://www.letras.mus.br/?q=${encodeURIComponent(title + " " + author)}`;
+    alert("Erro na busca.\n\n" +
+          "Abri letras.mus.br para você copiar a letra:\n" + letrasLink);
+    window.open(letrasLink, '_blank');
+  }
+}
+
+    // Feedback para o usuário
     let message = "Busca concluída!\n\n";
     if (foundLink) message += "✅ Link do YouTube encontrado!\n";
     if (foundLyrics) message += "✅ Letra encontrada!\n";
-    else {
-      message += "⚠️ Letra não encontrada automaticamente.\n" +
-                 "Dica: abra letras.mus.br ou cifraclub.com.br e cole manualmente.\n" +
-                 "Link rápido: https://www.letras.mus.br/?q=" + encodeURIComponent(cleanTitle + " " + cleanAuthor);
+    if (!foundLink && !foundLyrics) {
+      message = "Não consegui encontrar automaticamente.\n\n" +
+                "Tente buscar manualmente:\n" +
+                "- YouTube: '" + title + " " + author + " oficial'\n" +
+                "- Letra: letras.mus.br ou cifraclub.com.br";
     }
     alert(message);
   }
