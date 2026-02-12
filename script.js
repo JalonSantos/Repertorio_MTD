@@ -54,7 +54,118 @@ const readLyricsEl = document.getElementById('read-lyrics');
 const historyModal = document.getElementById('history-modal');
 const historyList = document.getElementById('history-list');
 
-// Seleção de culto
+// ====================== BUSCA AUTOMÁTICA ======================
+const YOUTUBE_API_KEY = "AIzaSyAR9JfWeDi2i7QODt-f6FLxLBVc-l4yCQE";
+
+document.addEventListener('click', async (e) => {
+  if (e.target.id === 'btn-buscar-automatico') {
+    const titleInput = document.getElementById('new-title');
+    const authorInput = document.getElementById('new-author');
+    const linkInput = document.getElementById('new-link');
+    const lyricsInput = document.getElementById('new-lyrics');
+
+    const title = titleInput.value.trim();
+    const author = authorInput.value.trim();
+
+    if (!title) {
+      alert("Preencha pelo menos o título da música!");
+      return;
+    }
+
+    let foundLink = linkInput.value.trim();
+    let foundLyrics = lyricsInput.value.trim();
+
+    // 1. Buscar vídeo no YouTube (já estava funcionando)
+    if (!foundLink) {
+      try {
+        const query = encodeURIComponent(`${title} ${author} oficial letra`);
+        const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=3&key=${YOUTUBE_API_KEY}`;
+        
+        const response = await fetch(ytUrl);
+        const data = await response.json();
+
+        if (data.items && data.items.length > 0) {
+          // Prioriza vídeo com "oficial" ou "letra" no título
+          const bestVideo = data.items.find(item => 
+            item.snippet.title.toLowerCase().includes("oficial") || 
+            item.snippet.title.toLowerCase().includes("letra") ||
+            item.snippet.channelTitle.toLowerCase().includes("oficial")
+          ) || data.items[0];
+
+          foundLink = `https://www.youtube.com/watch?v=${bestVideo.id.videoId}`;
+          linkInput.value = foundLink;
+        }
+      } catch (err) {
+        console.error("Erro ao buscar YouTube:", err);
+      }
+    }
+
+        // 2. Buscar letra via Genius API (melhor para gospel)
+if (!foundLyrics) {
+  try {
+    const GENIUS_TOKEN = "AX0aJTkBgRxfrr4FIXriHM4mcQg1XTVgd7rtr4h5BM9A925Ak9zujOqIaonm_H8w";
+
+    let cleanTitle = title
+      .replace(/\(.*?\)/g, '')
+      .replace(/versão.*/gi, '')
+      .replace(/ao vivo.*/gi, '')
+      .trim();
+
+    let cleanAuthor = author.trim();
+
+    const geniusSearchUrl = `https://api.genius.com/search?q=${encodeURIComponent(cleanTitle + ' ' + cleanAuthor)}`;
+
+    const response = await fetch(geniusSearchUrl, {
+      headers: {
+        Authorization: `Bearer ${GENIUS_TOKEN}`
+      }
+    });
+
+    const data = await response.json();
+
+    if (data.response.hits && data.response.hits.length > 0) {
+      // Pega o hit mais relevante
+      const bestHit = data.response.hits[0].result;
+      const songUrl = bestHit.url;
+
+      // Abre a página do Genius para copiar a letra (Genius não dá letra completa na busca free)
+      alert("Letra encontrada no Genius!\n\n" +
+            "Abra o link abaixo para copiar a letra completa:\n" + songUrl);
+      window.open(songUrl, '_blank');
+    } else {
+      // Fallback
+      const fallbackSearch = encodeURIComponent(`${cleanTitle} ${cleanAuthor}`);
+      const letrasLink = `https://www.letras.mus.br/?q=${fallbackSearch}`;
+      alert("Letra não encontrada no Genius.\n\n" +
+            "Abri letras.mus.br para você copiar:\n" + letrasLink);
+      window.open(letrasLink, '_blank');
+    }
+  } catch (err) {
+    console.error("Erro ao buscar no Genius:", err);
+    // Fallback em erro
+    const fallbackSearch = encodeURIComponent(`${title} ${author}`);
+    const letrasLink = `https://www.letras.mus.br/?q=${fallbackSearch}`;
+    alert("Erro na busca automática.\n\n" +
+          "Abri letras.mus.br para você copiar a letra:\n" + letrasLink);
+    window.open(letrasLink, '_blank');
+  }
+}
+
+    // Feedback para o usuário
+    let message = "Busca concluída!\n\n";
+    if (foundLink) message += "✅ Link do YouTube encontrado!\n";
+    if (foundLyrics) message += "✅ Letra encontrada!\n";
+    if (!foundLink && !foundLyrics) {
+      message = "Não consegui encontrar automaticamente.\n\n" +
+                "Tente buscar manualmente:\n" +
+                "- YouTube: '" + title + " " + author + " oficial'\n" +
+                "- Letra: letras.mus.br ou cifraclub.com.br";
+    }
+    alert(message);
+  }
+});
+
+// Seleção de culto (mantido igual)
 selectModeBtn.addEventListener("click", () => {
   if (!selectMode) {
     serviceModal.classList.remove("hidden");
