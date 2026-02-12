@@ -100,53 +100,37 @@ document.addEventListener('click', async (e) => {
       }
     }
 
-        // 2. Buscar letra via Genius API (melhor para gospel)
+        // 2. Buscar letra via backend Vercel (sem CORS)
 if (!foundLyrics) {
   try {
-    const GENIUS_TOKEN = "AX0aJTkBgRxfrr4FIXriHM4mcQg1XTVgd7rtr4h5BM9A925Ak9zujOqIaonm_H8w";
+    const BACKEND_URL = "https://mtd-repertorio-backend.vercel.app/api/search"; 
+    const searchTerm = `${cleanTitle} ${cleanAuthor}`;
+    const response = await fetch(`${BACKEND_URL}?q=${encodeURIComponent(searchTerm)}`);
 
-    let cleanTitle = title
-      .replace(/\(.*?\)/g, '')
-      .replace(/versão.*/gi, '')
-      .replace(/ao vivo.*/gi, '')
-      .trim();
-
-    let cleanAuthor = author.trim();
-
-    const geniusSearchUrl = `https://api.genius.com/search?q=${encodeURIComponent(cleanTitle + ' ' + cleanAuthor)}`;
-
-    const response = await fetch(geniusSearchUrl, {
-      headers: {
-        Authorization: `Bearer ${GENIUS_TOKEN}`
-      }
-    });
+    if (!response.ok) {
+      throw new Error(`Backend retornou ${response.status}`);
+    }
 
     const data = await response.json();
 
-    if (data.response.hits && data.response.hits.length > 0) {
-      // Pega o hit mais relevante
+    if (data.response?.hits?.length > 0) {
       const bestHit = data.response.hits[0].result;
       const songUrl = bestHit.url;
 
-      // Abre a página do Genius para copiar a letra (Genius não dá letra completa na busca free)
       alert("Letra encontrada no Genius!\n\n" +
-            "Abra o link abaixo para copiar a letra completa:\n" + songUrl);
+            "Abra o link para copiar a letra completa:\n" + songUrl);
       window.open(songUrl, '_blank');
     } else {
-      // Fallback
-      const fallbackSearch = encodeURIComponent(`${cleanTitle} ${cleanAuthor}`);
-      const letrasLink = `https://www.letras.mus.br/?q=${fallbackSearch}`;
+      const letrasLink = `https://www.letras.mus.br/?q=${encodeURIComponent(searchTerm)}`;
       alert("Letra não encontrada no Genius.\n\n" +
             "Abri letras.mus.br para você copiar:\n" + letrasLink);
       window.open(letrasLink, '_blank');
     }
   } catch (err) {
-    console.error("Erro ao buscar no Genius:", err);
-    // Fallback em erro
-    const fallbackSearch = encodeURIComponent(`${title} ${author}`);
-    const letrasLink = `https://www.letras.mus.br/?q=${fallbackSearch}`;
-    alert("Erro na busca automática.\n\n" +
-          "Abri letras.mus.br para você copiar a letra:\n" + letrasLink);
+    console.error("Erro ao buscar via backend:", err);
+    const letrasLink = `https://www.letras.mus.br/?q=${encodeURIComponent(title + " " + author)}`;
+    alert("Erro na busca.\n\n" +
+          "Abri letras.mus.br para você copiar:\n" + letrasLink);
     window.open(letrasLink, '_blank');
   }
 }
