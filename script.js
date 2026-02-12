@@ -100,10 +100,11 @@ document.addEventListener('click', async (e) => {
       }
     }
 
-        // 2. Buscar letra via backend Vercel (sem CORS)
+// 2. Buscar letra via backend Vercel
 if (!foundLyrics) {
   try {
-    const BACKEND_URL = "https://mtd-repertorio-backend.vercel.app/api/search"; 
+    const BACKEND_URL = "https://mtd-repertorio-backend.vercel.app/api/search";  // sua URL exata
+
     const searchTerm = `${cleanTitle} ${cleanAuthor}`;
     const response = await fetch(`${BACKEND_URL}?q=${encodeURIComponent(searchTerm)}`);
 
@@ -130,7 +131,7 @@ if (!foundLyrics) {
     console.error("Erro ao buscar via backend:", err);
     const letrasLink = `https://www.letras.mus.br/?q=${encodeURIComponent(title + " " + author)}`;
     alert("Erro na busca.\n\n" +
-          "Abri letras.mus.br para você copiar:\n" + letrasLink);
+          "Abri letras.mus.br para você copiar a letra:\n" + letrasLink);
     window.open(letrasLink, '_blank');
   }
 }
