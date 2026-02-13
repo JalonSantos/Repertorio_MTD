@@ -100,27 +100,17 @@ document.addEventListener('click', async (e) => {
       }
     }
 
-// 2. Buscar letra via proxy público (sem CORS, sem backend)
+// 2. Buscar letra via backend Vercel
 if (!foundLyrics) {
   try {
-    const GENIUS_TOKEN = "AX0aJTkBgRxfrr4FIXriHM4mcQg1XTVgd7rtr4h5BM9A925Ak9zujOqIaonm_H8w";  // cole seu token do Genius aqui (temporário)
+    const BACKEND_URL = "https://mtd-repertorio-backend.vercel.app/api/search";  // sua URL exata
 
-    let cleanTitle = title
-      .replace(/\(.*?\)/g, '')
-      .replace(/versão.*/gi, '')
-      .replace(/ao vivo.*/gi, '')
-      .trim();
+    const searchTerm = `${cleanTitle} ${cleanAuthor}`;
+    const response = await fetch(`${BACKEND_URL}?q=${encodeURIComponent(searchTerm)}`);
 
-    let cleanAuthor = author.trim();
-
-    const geniusQuery = encodeURIComponent(cleanTitle + ' ' + cleanAuthor);
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://api.genius.com/search?q=' + geniusQuery)}`;
-
-    const response = await fetch(proxyUrl, {
-      headers: {
-        'Authorization': `Bearer ${GENIUS_TOKEN}`
-      }
-    });
+    if (!response.ok) {
+      throw new Error(`Backend retornou ${response.status}`);
+    }
 
     const data = await response.json();
 
@@ -132,19 +122,11 @@ if (!foundLyrics) {
             "Abra o link para copiar a letra completa:\n" + songUrl);
       window.open(songUrl, '_blank');
     } else {
-      const letrasLink = `https://www.letras.mus.br/?q=${encodeURIComponent(cleanTitle + " " + cleanAuthor)}`;
+      const letrasLink = `https://www.letras.mus.br/?q=${encodeURIComponent(searchTerm)}`;
       alert("Letra não encontrada no Genius.\n\n" +
             "Abri letras.mus.br para você copiar:\n" + letrasLink);
       window.open(letrasLink, '_blank');
     }
-  } catch (err) {
-    console.error("Erro ao buscar via proxy:", err);
-    const letrasLink = `https://www.letras.mus.br/?q=${encodeURIComponent(title + " " + author)}`;
-    alert("Erro na busca automática.\n\n" +
-          "Abri letras.mus.br para você copiar a letra:\n" + letrasLink);
-    window.open(letrasLink, '_blank');
-  }
-
   } catch (err) {
     console.error("Erro ao buscar via backend:", err);
     const letrasLink = `https://www.letras.mus.br/?q=${encodeURIComponent(title + " " + author)}`;
