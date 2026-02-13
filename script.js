@@ -144,7 +144,7 @@ if (!foundLyrics) {
           "Abri letras.mus.br para você copiar a letra:\n" + letrasLink);
     window.open(letrasLink, '_blank');
   }
-}
+
   } catch (err) {
     console.error("Erro ao buscar via backend:", err);
     const letrasLink = `https://www.letras.mus.br/?q=${encodeURIComponent(title + " " + author)}`;
