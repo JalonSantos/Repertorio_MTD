@@ -108,31 +108,24 @@ document.addEventListener('click', async (e) => {
       }
     }
 
-    // 2. Buscar letra via lyrics.ovh (gratuita)
-    if (!foundLyrics) {
-      try {
-        let lyricsUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(cleanAuthor)}/${encodeURIComponent(cleanTitle)}`;
-        let response = await fetch(lyricsUrl);
-        let data = await response.json();
+// 2. Buscar letra via sua API (Genius scraper)
+if (!foundLyrics) {
+  try {
+    const backendUrl = `/api/search?q=${encodeURIComponent(cleanTitle + ' ' + cleanAuthor)}`;
 
-        if (data.lyrics) {
-          foundLyrics = data.lyrics;
-          lyricsInput.value = foundLyrics;
-        } else {
-          // Tenta invertido
-          lyricsUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(cleanTitle)}/${encodeURIComponent(cleanAuthor)}`;
-          response = await fetch(lyricsUrl);
-          data = await response.json();
+    const response = await fetch(backendUrl);
+    const data = await response.json();
 
-          if (data.lyrics) {
-            foundLyrics = data.lyrics;
-            lyricsInput.value = foundLyrics;
-          }
-        }
-      } catch (err) {
-        console.error("Erro ao buscar letra:", err);
-      }
+    if (data.lyrics) {
+      foundLyrics = data.lyrics;
+      lyricsInput.value = foundLyrics;
     }
+
+  } catch (err) {
+    console.error("Erro ao buscar letra no backend:", err);
+  }
+}
+
 
     // Feedback para o usuário
     let message = "Busca concluída!\n\n";
