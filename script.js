@@ -72,7 +72,7 @@ document.addEventListener('click', async (e) => {
       return;
     }
 
-    // Limpeza comum para as duas buscas (definidas aqui para evitar ReferenceError)
+    // Limpeza comum para as buscas
     let cleanTitle = title
       .replace(/\(.*?\)/g, '')
       .replace(/versão.*/gi, '')
@@ -108,34 +108,60 @@ document.addEventListener('click', async (e) => {
       }
     }
 
-// 2. Buscar letra via sua API (Genius scraper)
-if (!foundLyrics) {
-  try {
-    const backendUrl = `/api/search?q=${encodeURIComponent(cleanTitle + ' ' + cleanAuthor)}`;
+    // 2. Buscar letra via lyrics.ovh + fallback para letras.mus.br
+    if (!foundLyrics) {
+      let letraEncontrada = false;
 
-    const response = await fetch(backendUrl);
-    const data = await response.json();
+      try {
+        // Tenta normal: autor / título
+        let lyricsUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(cleanAuthor)}/${encodeURIComponent(cleanTitle)}`;
+        let response = await fetch(lyricsUrl);
+        let data = await response.json();
 
-    if (data.lyrics) {
-      foundLyrics = data.lyrics;
-      lyricsInput.value = foundLyrics;
+        if (data.lyrics) {
+          foundLyrics = data.lyrics;
+          lyricsInput.value = foundLyrics;
+          letraEncontrada = true;
+        }
+      } catch (err) {
+        console.error("Erro na primeira tentativa de letra:", err);
+      }
+
+      if (!letraEncontrada) {
+        try {
+          // Tenta invertido: título / autor
+          let lyricsUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(cleanTitle)}/${encodeURIComponent(cleanAuthor)}`;
+          let response = await fetch(lyricsUrl);
+          let data = await response.json();
+
+          if (data.lyrics) {
+            foundLyrics = data.lyrics;
+            lyricsInput.value = foundLyrics;
+            letraEncontrada = true;
+          }
+        } catch (err) {
+          console.error("Erro na segunda tentativa de letra:", err);
+        }
+      }
+
+      // Se não achou na API, abre letras.mus.br automaticamente
+      if (!letraEncontrada) {
+        const searchQuery = encodeURIComponent(`${cleanTitle} ${cleanAuthor}`);
+        const letrasLink = `https://www.letras.mus.br/?q=${searchQuery}`;
+        
+        alert("Letra não encontrada automaticamente na API.\n\n" +
+              "Abri letras.mus.br com a busca pronta pra você copiar a letra!");
+        window.open(letrasLink, '_blank');
+      }
     }
 
-  } catch (err) {
-    console.error("Erro ao buscar letra no backend:", err);
-  }
-}
-
-
-    // Feedback para o usuário
+    // Feedback final
     let message = "Busca concluída!\n\n";
     if (foundLink) message += "✅ Link do YouTube encontrado!\n";
     if (foundLyrics) message += "✅ Letra encontrada!\n";
     if (!foundLink && !foundLyrics) {
-      message += "⚠️ Não consegui encontrar automaticamente.\n\n" +
-                 "Tente buscar manualmente:\n" +
-                 "- YouTube: '" + title + " " + author + " oficial'\n" +
-                 "- Letra: letras.mus.br ou cifraclub.com.br";
+      message += "⚠️ Não consegui encontrar automaticamente.\n" +
+                 "Letras.mus.br foi aberto para você copiar manualmente.";
     }
     alert(message);
   }
