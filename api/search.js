@@ -1,41 +1,23 @@
-import axios from "axios";
-import cheerio from "cheerio";
-
 export default async function handler(req, res) {
   const { q } = req.query;
 
   if (!q) {
-    return res.status(400).json({ error: "Missing query" });
+    return res.status(400).json({ error: "Parâmetro 'q' é obrigatório" });
   }
 
   try {
-    const searchRes = await axios.get(
-      `https://genius.com/api/search/multi?per_page=5&q=${encodeURIComponent(q)}`
+    const response = await fetch(
+      `https://api.lyrics.ovh/v1/${encodeURIComponent(q.split(" - ")[0])}/${encodeURIComponent(q.split(" - ")[1] || "")}`
     );
 
-    const hits = searchRes.data.response.sections[0].hits;
-
-    if (!hits.length) {
-      return res.json({ lyrics: null });
+    if (!response.ok) {
+      return res.status(404).json({ error: "Letra não encontrada" });
     }
 
-    const songUrl = hits[0].result.url;
+    const data = await response.json();
 
-    const page = await axios.get(songUrl);
-    const $ = cheerio.load(page.data);
-
-    let lyrics = "";
-
-    $('[data-lyrics-container="true"]').each((i, el) => {
-      lyrics += $(el).text() + "\n\n";
-    });
-
-    lyrics = lyrics.trim();
-
-    return res.json({ lyrics });
-
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Erro ao buscar letra" });
+    res.status(200).json({ lyrics: data.lyrics });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar letra" });
   }
 }
